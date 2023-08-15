@@ -1,0 +1,62 @@
+﻿@page
+@model IndexModel
+@{
+  ViewData["Title"] = "Home page";
+}
+
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">
+        <input id="check-all" class="form-check-input" type="checkbox" onchange="checkAll()">
+      </th>
+      <th scope="col">#</th>
+      <th scope="col">Name</th>
+      <th scope="col">Club</th>
+      <th scope="col">Current number</th>
+      <th scope="col">Position</th>
+      <th scope="col">Age</th>
+      <th scope="col">Nation</th>
+      <th scope="col">Update</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    @for (var i = 0; i < Model.Result.Count(); i++)
+    {
+      var player = Model.Result[i];
+
+      <tr>
+        <td>
+          <input class="form-check-input" type="checkbox">
+        </td>
+        <th scope="row">@(i + 1)</th>
+        <td class="name">
+          <img src="@player.ImageUrl" alt="@player.Name">
+          <span>@player.Name</span>
+        </td>
+        <td class="club">
+          @if (player.Club != null)
+          {
+            <img src="@player.Club.ImageUrl" alt="@player.Club.Name">
+            <span>@player.Club.Name</span>
+          }
+        </td>
+        <td class="current-number">
+          @player.CurrentSquadNumber?.Number
+        </td>
+        <td class="position">@player.Position</td>
+        <td class="age">@player.Age</td>
+        <td class="nation">
+          <img src="@player.Nation.ImageUrl" alt="@player.Nation.Name">
+          <span>@player.Nation.Name</span>
+        </td>
+        <td>
+          <button type="button" class="btn btn-primary" onclick="addPlayer(@i)">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>

@@ -1,0 +1,200 @@
+﻿@page
+@using Newtonsoft.Json
+@model AddModel
+
+@{
+  ViewData["Title"] = "Add Player";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="input-group mb-3">
+  <input asp-for="Input" id="search" class="form-control" placeholder="Player name" aria-describedby="search-btn">
+  <button type="button" id="search-btn" class="btn btn-primary" onclick="onSearch()">Search</button>
+</div>
+
+<div class="row mb-3">
+  <div class="col-auto">
+    <button type="button" class="btn btn-primary" onclick="addChecked()">Add checked</button>
+  </div>
+</div>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">
+        <input id="check-all" class="form-check-input" type="checkbox" onchange="checkAll()">
+      </th>
+      <th scope="col">#</th>
+      <th scope="col">Name</th>
+      <th scope="col">Club</th>
+      <th scope="col">Position</th>
+      <th scope="col">Age</th>
+      <th scope="col">Nation</th>
+      <th scope="col">Action</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    @for (var i = 0; i < Model.Result.Count; i++)
+    {
+      var player = Model.Result[i];
+
+      <tr>
+        <td>
+          <input class="form-check-input" type="checkbox">
+        </td>
+        <th scope="row">@(i + 1)</th>
+        <td class="name" data-url="@player.Url">
+          <img src="@player.ImageUrl" alt="@player.Name">
+          <span>@player.Name</span>
+        </td>
+        <td class="club" data-url="@player.Club?.Url">
+          @if (player.Club != null)
+          {
+            <img src="@player.Club.ImageUrl" alt="@player.Club.Name">
+            <span>@player.Club.Name</span>
+          }
+        </td>
+        <td class="position">@player.Position</td>
+        <td class="age">@player.Age</td>
+        <td class="nation">
+          @if (player.Nation != null)
+          {
+            <img src="@player.Nation.ImageUrl" alt="@player.Nation.Name">
+            <span>@player.Nation.Name</span>
+          }
+        </td>
+        <td>
+          <button type="button" class="btn btn-primary" onclick="addPlayer(@i)" disabled>
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          </button>
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>
+
+@section Scripts {
+  <script>
+    const loadingBtnContent = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`;
+    const addBtnContent = `<i class="bi bi-plus"></i>`;
+    const updateBtnContent = `<i class="bi bi-arrow-clockwise"></i>`;
+    
+    function checkStatus(){
+      const playersUrl = @Html.Raw(JsonConvert.SerializeObject(Model.Result.Select(p => p.Url)));
+      
+      $.ajax({
+        url: 'Ppsn/CheckExists/',
+        type: 'POST',
+        data: JSON.stringify(playersUrl),
+        dataType: 'json',
+        contentType: 'application/json',
+        success: function (res) {
+          for (let i=0; i<@Model.Result.Count; i++) {
+            setLoadingButton(i, false, res[i] ? updateBtnContent : addBtnContent);
+          }
+        },
+        error: function() {
+          for (let i=0; i<@Model.Result.Count; i++) {
+            setLoadingButton(i, false, addBtnContent);
+          }
+        }
+      });
+    }
+  
+    function onSearch() {
+      const inputText = $('#search').val();
+      window.location.href = `/Add?input=${inputText}`;
+    }
+    
+    function getPlayerDataAt(idx, row) {
+      row ??= $('tbody tr').eq(idx);
+      
+      const clubName = row.find('.club span').text();
+      const clubUrl = row.find('.club').attr('data-url');
+      const clubImageUrl = row.find('.club img').attr('src');
+      
+      const club = {
+       name: clubName,
+       url: clubUrl,
+       imageUrl: clubImageUrl
+      };
+      
+      const nationName = row.find('.nation span').text();
+      const nationImageUrl = row.find('.nation img').attr('src');
+      
+      const nation = {
+       name: nationName,
+       imageUrl: nationImageUrl
+      }
+      
+      const name = row.find('.name span').text();
+      const imageUrl = row.find('.name img').attr('src');
+      const url = row.find('.name').attr('data-url');
+      const position = row.find('.position').text();
+      const age = row.find('.age').text();
+
+      return { name, imageUrl, url, club, position, age, nation};
+    }
+    
+    function addChecked() {
+      const players = [];
+      const indices = [];
+      
+      for (let i=0; i<@Model.Result.Count; i++) {
+        const row = $('tbody tr').eq(i);
+        
+        if (row.find('input[type="checkbox"]').prop('checked') === true) {
+          setLoadingButton(i, true);
+          indices.push(i);
+          players.push(getPlayerDataAt(i, row));
+        }
+      }
+      
+      addCheckedPlayer(players, indices);
+    }
+    
+    function addPlayer(idx) {
+      setLoadingButton(idx, true);
+      
+      const player = getPlayerDataAt(idx);
+      
+      addCheckedPlayer([player], [idx])
+    }
+    
+    function addCheckedPlayer(players, indices) {
+      $.ajax({
+        url: 'Ppsn/Add/',
+        type: 'POST',
+        data: JSON.stringify(players),
+        dataType: 'json',
+        contentType: 'application/json',
+        complete:  function () {
+          indices.forEach(idx => {
+            setLoadingButton(idx, false, updateBtnContent);
+            $('tbody tr').eq(idx).find('input[type="checkbox"]').prop('checked', false)
+          })
+        }
+      });
+    }
+    
+    function setLoadingButton(idx, loading = true, content = loadingBtnContent) {
+      const btn = $('tbody tr').eq(idx).find('button');
+      
+      btn.attr('disabled', loading);
+      btn.html(content);
+    }
+    
+    $(document).ready(function() {
+      checkStatus();
+    });
+
+    $("#search").keyup(function(event) {
+      if (event.keyCode === 13) {
+        $("#search-btn").click();
+      }
+    });
+    
+  </script>
+}
