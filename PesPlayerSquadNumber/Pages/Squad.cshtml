@@ -1,0 +1,77 @@
+﻿@page
+@model SquadModel
+
+@{
+  ViewData["Title"] = "Squad";
+}
+
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Name</th>
+      <th scope="col">Position</th>
+      <th scope="col">Nation</th>
+      <th scope="col">Current number</th>
+      <th scope="col">Recommended number</th>
+      <th scope="col">Age</th>
+      <th scope="col">Update</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    @for (var i = 0; i < Model.Result.Count; i++)
+    {
+      var player = Model.Result[i];
+
+      @if (player != null)
+      {
+        <tr>
+          <th scope="row">@(i + 1)</th>
+          <td class="name">
+            <img src="@player.ImageUrl" alt="@player.Name">
+            <span>@player.Name</span>
+          </td>
+          <td class="position">@player.Position</td>
+          <td class="nation">
+            <img src="@player.Nation.ImageUrl" alt="@player.Nation.Name">
+            <span>@player.Nation.Name</span>
+          </td>
+          <td class="current-number">@player.CurrentSquadNumber</td>
+          <td class="current-number">@player.RecommendedSquadNumber</td>
+          <td class="age">@player.Age</td>
+          <td>
+            <button type="button" class="btn btn-primary" onclick="removePlayer(@player.Id, this)">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      }
+      else
+      {
+        <tr>
+          <th scope="row">@(i + 1)</th>
+          <td>
+            <button type="button" class="btn btn-primary" onclick="addPlayer()">
+              <i class="bi bi-plus"></i>
+            </button>
+          </td>
+        </tr>
+      }
+    }
+  </tbody>
+</table>
+
+@section Scripts {
+  <script>
+  
+    function removePlayer(playerId, btn) {
+      console.log(btn);
+    }
+    
+    function addPlayer() {
+      
+    }
+    
+  </script>
+}

@@ -11,7 +11,7 @@ public class Club
     public string Url { get; set; } = null!;
     public string ImageUrl { get; set; } = null!;
 
-    public List<Player> Players { get; set; } = new();
+    public virtual List<Player> Players { get; set; } = new();
 
-    public List<SquadNumber> SquadNumbers { get; set; } = new();
+    public virtual List<SquadNumber> SquadNumbers { get; set; } = new();
 }

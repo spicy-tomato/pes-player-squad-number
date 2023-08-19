@@ -2,17 +2,20 @@
 using PesPlayerSquadNumber.Constants;
 using PesPlayerSquadNumber.Dtos.Transfermarkt;
 using PesPlayerSquadNumber.Models;
+using PesPlayerSquadNumber.Services.Interfaces;
 using Club = PesPlayerSquadNumber.Dtos.Transfermarkt.Club;
 using Nation = PesPlayerSquadNumber.Dtos.Transfermarkt.Nation;
 
-namespace PesPlayerSquadNumber.Services;
+namespace PesPlayerSquadNumber.Services.Implementations;
 
-public class TransfermarktService
+public class TransfermarktService : ITransfermarktService
 {
     private readonly HtmlWeb _web = new();
     private const string BaseUrl = TransfermarktConstant.BaseUrl;
 
-    public List<TransfermarktPlayer> Search(string? playerNameToSearch, int page = 1)
+    public List<TransfermarktPlayer> Search(string? playerNameToSearch) => Search(playerNameToSearch, 1);
+
+    public List<TransfermarktPlayer> Search(string? playerNameToSearch, int page)
     {
         if (string.IsNullOrEmpty(playerNameToSearch)) return new List<TransfermarktPlayer>();
 

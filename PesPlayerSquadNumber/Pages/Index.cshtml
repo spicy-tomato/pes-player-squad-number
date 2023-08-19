@@ -7,9 +7,6 @@
 <table class="table">
   <thead>
     <tr>
-      <th scope="col">
-        <input id="check-all" class="form-check-input" type="checkbox" onchange="checkAll()">
-      </th>
       <th scope="col">#</th>
       <th scope="col">Name</th>
       <th scope="col">Club</th>
@@ -17,19 +14,16 @@
       <th scope="col">Position</th>
       <th scope="col">Age</th>
       <th scope="col">Nation</th>
-      <th scope="col">Update</th>
+      <th scope="col">Action</th>
     </tr>
   </thead>
 
   <tbody>
-    @for (var i = 0; i < Model.Result.Count(); i++)
+    @for (var i = 0; i < Model.Result.Count; i++)
     {
       var player = Model.Result[i];
 
       <tr>
-        <td>
-          <input class="form-check-input" type="checkbox">
-        </td>
         <th scope="row">@(i + 1)</th>
         <td class="name">
           <img src="@player.ImageUrl" alt="@player.Name">
@@ -42,9 +36,7 @@
             <span>@player.Club.Name</span>
           }
         </td>
-        <td class="current-number">
-          @player.CurrentSquadNumber?.Number
-        </td>
+        <td class="current-number">@player.CurrentSquadNumber</td>
         <td class="position">@player.Position</td>
         <td class="age">@player.Age</td>
         <td class="nation">
@@ -52,7 +44,7 @@
           <span>@player.Nation.Name</span>
         </td>
         <td>
-          <button type="button" class="btn btn-primary" onclick="addPlayer(@i)">
+          <button type="button" class="player-popover btn btn-primary" data-bs-toggle="popover" data-player-id="@player.Id">
             <i class="bi bi-arrow-clockwise"></i>
           </button>
         </td>
@@ -60,3 +52,77 @@
     }
   </tbody>
 </table>
+
+@section Scripts {
+  <script>
+  
+    function updatePopup() {
+      $.ajax({
+        url: 'Ppsn/GetInSquad/',
+        type: 'GET',
+        dataType: 'json',
+        contentType: 'application/json',
+        success: function (res) {
+          updatePopupTable(res);
+        },
+        error: function() {
+          updatePopupTable([]);
+        }
+      });
+    }
+    
+    function updatePopupTable(players) {
+      const popoverTriggerList = [].slice.call(document.querySelectorAll('.player-popover'));
+      popoverTriggerList.map(function (el) {
+        return new bootstrap.Popover(el, { 
+          content: buildPopupTable(players, $(el).attr('data-player-id')),
+          html: true,
+          trigger: 'focus'
+        });
+      });
+    }
+    
+    function buildAssignBtn(playerId, squadIndex, isNew = true) {
+      const innerText = isNew ? 'Assign' : 'Replace';
+      return $($.parseHTML(`<div type="button" class="btn btn-primary btn-sm" onclick="assign(${playerId}, ${squadIndex})">${innerText}</div>`));
+    }
+    
+    function buildPopupTable(players, playerId) {
+      const html = $(document.createElement('div'))
+        .addClass('overflow-auto')
+        .css('max-height', '400px');
+      
+      for (let i=0; i<players.length; i++) {
+        const row = $(document.createElement('div'))
+          .addClass('d-flex align-items-center mt-1')
+          .append($(document.createElement('div')).text(`${i+1}.`).addClass('me-1'))
+          .append((players[i] 
+            ? $(document.createElement('div'))
+                .text(players[i].name)
+                .append(buildAssignBtn(playerId, i, false).addClass('me-1'))
+            : buildAssignBtn(playerId, i)
+          ));
+        html.append(row);
+      }
+      
+      return html;
+    }
+    
+    function assign(playerId, squadIndex) {
+      $.ajax({
+        url: 'Ppsn/AssignToSquad/',
+        type: 'POST',
+        data: JSON.stringify({ playerId, squadIndex }),
+        contentType: 'application/json',
+        success: function () {
+          updatePopup();
+        },
+      });
+    }
+    
+    $(document).ready(function() {
+      updatePopup();
+    });
+
+  </script>
+}

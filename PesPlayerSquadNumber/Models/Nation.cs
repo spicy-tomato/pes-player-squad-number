@@ -10,5 +10,5 @@ public class Nation
     public string Name { get; set; } = null!;
     public string ImageUrl { get; set; } = null!;
 
-    public List<Player> Players { get; set; } = new();
+    public virtual List<Player> Players { get; set; } = new();
 }

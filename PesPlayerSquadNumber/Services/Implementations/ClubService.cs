@@ -1,8 +1,9 @@
 ﻿using PesPlayerSquadNumber.Dtos.Transfermarkt;
+using PesPlayerSquadNumber.Services.Interfaces;
 
-namespace PesPlayerSquadNumber.Services;
+namespace PesPlayerSquadNumber.Services.Implementations;
 
-public class ClubService
+public class ClubService : IClubService
 {
     private readonly ILogger<ClubService> _logger;
     private readonly PpsnDbContext _context;
@@ -36,7 +37,7 @@ public class ClubService
             Url = club.Url,
             ImageUrl = club.ImageUrl
         });
-        
+
         _logger.LogInformation("Added club {ClubName}, {ClubUrl}", club.Name, club.Url);
     }
 }

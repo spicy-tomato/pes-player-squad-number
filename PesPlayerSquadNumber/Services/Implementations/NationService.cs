@@ -1,8 +1,9 @@
 ﻿using PesPlayerSquadNumber.Dtos.Transfermarkt;
+using PesPlayerSquadNumber.Services.Interfaces;
 
-namespace PesPlayerSquadNumber.Services;
+namespace PesPlayerSquadNumber.Services.Implementations;
 
-public class NationService
+public class NationService : INationService
 {
     private readonly ILogger<NationService> _logger;
     private readonly PpsnDbContext _context;
@@ -13,7 +14,8 @@ public class NationService
         _context = context;
     }
 
-    public Models.Nation? GetByImageUrl(string imageUrl) => _context.Nations.FirstOrDefault(c => c.ImageUrl == imageUrl);
+    public Models.Nation? GetByImageUrl(string? imageUrl) =>
+        imageUrl != null ? _context.Nations.FirstOrDefault(c => c.ImageUrl == imageUrl) : null;
 
     public void Add(IEnumerable<Nation> clubs)
     {
@@ -25,15 +27,15 @@ public class NationService
         _context.SaveChanges();
     }
 
-    private void Add(Nation club)
+    private void Add(Nation nation)
     {
-        var clubExists = _context.Nations.Any(c => c.ImageUrl == club.ImageUrl);
-        if (clubExists) return;
+        var nationExists = _context.Nations.Any(c => c.ImageUrl == nation.ImageUrl);
+        if (nationExists) return;
 
         _context.Nations.Add(new Models.Nation
         {
-            Name = club.Name,
-            ImageUrl = club.ImageUrl
+            Name = nation.Name,
+            ImageUrl = nation.ImageUrl
         });
     }
 }

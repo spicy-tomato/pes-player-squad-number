@@ -12,8 +12,8 @@ public class SquadNumber
     public int Number { get; set; }
 
     public int ClubId { get; set; }
-    public Club Club { get; set; } = null!;
+    public virtual Club Club { get; set; } = null!;
 
     public int PlayerId { get; set; }
-    public Player Player { get; set; } = null!;
+    public virtual Player Player { get; set; } = null!;
 }

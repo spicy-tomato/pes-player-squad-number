@@ -1,15 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using PesPlayerSquadNumber.Dtos.Transfermarkt;
-using PesPlayerSquadNumber.Services;
+using PesPlayerSquadNumber.Services.Interfaces;
 
 namespace PesPlayerSquadNumber.Pages;
 
 public class AddModel : PageModel
 {
-    private TransfermarktService _transfermarktService;
+    private ITransfermarktService _transfermarktService;
 
-    public AddModel(TransfermarktService transfermarktService)
+    public AddModel(ITransfermarktService transfermarktService)
     {
         _transfermarktService = transfermarktService;
     }

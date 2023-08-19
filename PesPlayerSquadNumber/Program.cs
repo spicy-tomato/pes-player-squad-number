@@ -1,11 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using PesPlayerSquadNumber;
-using PesPlayerSquadNumber.Services;
+using PesPlayerSquadNumber.Services.Implementations;
+using PesPlayerSquadNumber.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-builder.Services.AddRazorPages();
 
 var connectionString = builder.Configuration.GetConnectionString("PPSNDbContextConnection") ??
                        throw new InvalidOperationException("Connection string 'PPSNDbContextConnection' not found.");
@@ -13,10 +11,18 @@ var connectionString = builder.Configuration.GetConnectionString("PPSNDbContextC
 builder.Services.AddDbContext<PpsnDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-builder.Services.AddScoped<TransfermarktService>();
-builder.Services.AddScoped<ClubService>();
-builder.Services.AddScoped<NationService>();
-builder.Services.AddScoped<PlayerService>();
+builder.Services.AddScoped<ITransfermarktService, TransfermarktService>();
+builder.Services.AddScoped<IClubService, ClubService>();
+builder.Services.AddScoped<INationService, NationService>();
+builder.Services.AddScoped<IPlayerService, PlayerService>();
+
+// Add services to the container.
+builder.Services.AddRazorPages();
+
+builder.Services.AddControllers()
+    .AddNewtonsoftJson(options =>
+        options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+    );
 
 var app = builder.Build();
 

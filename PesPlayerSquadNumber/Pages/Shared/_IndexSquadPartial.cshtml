@@ -1,0 +1,18 @@
+﻿@model List<PesPlayerSquadNumber.Models.Player?>?
+
+@if (Model != null)
+{
+  <table>
+    @for (var i = 0; i < Model.Count; i++)
+    {
+    <tr>
+      <td>@i</td>
+      <td>@Model[i]?.Name</td>
+    </tr>
+    }
+  </table>
+}
+else
+{
+  <div>Error</div>
+}

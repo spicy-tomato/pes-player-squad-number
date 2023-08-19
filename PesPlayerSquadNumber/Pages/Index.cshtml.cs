@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using PesPlayerSquadNumber.Models;
-using PesPlayerSquadNumber.Services;
+using PesPlayerSquadNumber.Services.Interfaces;
 
 namespace PesPlayerSquadNumber.Pages;
 
 public class IndexModel : PageModel
 {
-    private PlayerService _playerService;
+    private IPlayerService _playerService;
 
-    public IndexModel(PlayerService playerService)
+    public IndexModel(IPlayerService playerService)
     {
         _playerService = playerService;
     }
