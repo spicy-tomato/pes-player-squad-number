@@ -55,6 +55,7 @@
 
 @section Scripts {
   <script>
+    let popovers = [];
   
     function updatePopup() {
       $.ajax({
@@ -72,19 +73,26 @@
     }
     
     function updatePopupTable(players) {
+      popovers.forEach(popover => popover.dispose());
       const popoverTriggerList = [].slice.call(document.querySelectorAll('.player-popover'));
-      popoverTriggerList.map(function (el) {
+      popovers = popoverTriggerList.map(function (el) {
         return new bootstrap.Popover(el, { 
           content: buildPopupTable(players, $(el).attr('data-player-id')),
           html: true,
-          trigger: 'focus'
+          container: 'body'
         });
       });
     }
     
     function buildAssignBtn(playerId, squadIndex, isNew = true) {
       const innerText = isNew ? 'Assign' : 'Replace';
-      return $($.parseHTML(`<div type="button" class="btn btn-primary btn-sm" onclick="assign(${playerId}, ${squadIndex})">${innerText}</div>`));
+      const btn = $($.parseHTML(`<div type="button" class="btn btn-primary btn-sm">${innerText}</div>`));
+      
+      btn.on('click', function() {
+        assign(playerId, squadIndex)
+      });
+      
+      return btn;
     }
     
     function buildPopupTable(players, playerId) {

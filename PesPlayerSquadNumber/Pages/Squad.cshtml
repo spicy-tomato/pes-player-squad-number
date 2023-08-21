@@ -12,8 +12,9 @@
       <th scope="col">Name</th>
       <th scope="col">Position</th>
       <th scope="col">Nation</th>
-      <th scope="col">Current number</th>
-      <th scope="col">Recommended number</th>
+      <th scope="col">Club</th>
+      <th scope="col">Current</th>
+      <th scope="col">Recommended</th>
       <th scope="col">Age</th>
       <th scope="col">Update</th>
     </tr>
@@ -36,6 +37,13 @@
           <td class="nation">
             <img src="@player.Nation.ImageUrl" alt="@player.Nation.Name">
             <span>@player.Nation.Name</span>
+          </td>
+          <td class="club">
+            @if (player.Club != null)
+            {
+              <img src="@player.Club.ImageUrl" alt="@player.Club.Name">
+              <span>@player.Club.Name</span>
+            }
           </td>
           <td class="current-number">@player.CurrentSquadNumber</td>
           <td class="current-number">@player.RecommendedSquadNumber</td>
