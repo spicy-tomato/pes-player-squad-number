@@ -45,8 +45,6 @@ public class PlayerService : IPlayerService
             .Where(p => p.SquadIndex != null)
             .AsNoTracking()
             .ToList();
-        
-        
 
         foreach (var player in playersInSquad)
         {

@@ -40,6 +40,20 @@ public class SquadModel : PageModel
             player.RecommendedSquadNumber = number;
         }
 
+        foreach (var player in players)
+        {
+            if (player is not { RecommendedSquadNumber: null }) continue;
+
+            var randomNumber = 2;
+            while (assignedNumbers.Contains(randomNumber))
+            {
+                randomNumber++;
+            }
+
+            assignedNumbers.Add(randomNumber);
+            player.RecommendedSquadNumber = randomNumber;
+        }
+
         Result = players;
     }
 
