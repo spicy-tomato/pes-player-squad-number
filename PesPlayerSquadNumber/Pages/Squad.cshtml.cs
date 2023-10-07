@@ -62,7 +62,9 @@ public class SquadModel : PageModel
         if (p == null) return Array.Empty<NumberPoint>();
 
         var numbersInYears = p.SquadNumbers
-            .OrderByDescending(sn => sn.Id)
+            .Where(sn => sn.Number < 100)
+            .OrderByDescending(sn => sn.Season)
+            .ThenBy(sn => sn.Number)
             .GroupBy(sn => sn.Season)
             .Select(sn => sn.Select(x => x.Number).ToList())
             .ToList();
@@ -77,7 +79,7 @@ public class SquadModel : PageModel
                 var number = numbers[j];
                 if (i == 0 && j == 0)
                 {
-                    numberDict.Add(number, 100);
+                    numberDict.Add(number, 10);
                     continue;
                 }
 

@@ -119,13 +119,6 @@ public class TransfermarktService : ITransfermarktService
         return nodes;
     }
 
-    private HtmlNodeCollection LoadWebAndSelectNodes(string url, string rootNodeXPath, out HtmlDocument document)
-    {
-        document = _web.Load(BaseUrl + url);
-        var nodes = SelectNodes(document, rootNodeXPath);
-        return nodes;
-    }
-
     private static HtmlNodeCollection SelectNodes(HtmlDocument document, string nodeXPath)
     {
         var nodes = document.DocumentNode.SelectNodes(nodeXPath);
