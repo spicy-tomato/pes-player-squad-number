@@ -49,8 +49,8 @@
           <td class="current-number">@player.RecommendedSquadNumber</td>
           <td class="age">@player.Age</td>
           <td>
-            <button type="button" class="btn btn-primary" onclick="removePlayer(@player.Id, this)">
-              <i class="bi bi-trash"></i>
+            <button type="button" class="btn btn-primary" onclick="updatePlayer(@i)">
+              <i class="bi bi-arrow-clockwise"></i>
             </button>
           </td>
         </tr>
@@ -60,7 +60,7 @@
         <tr>
           <th scope="row">@(i + 1)</th>
           <td>
-            <button type="button" class="btn btn-primary" onclick="addPlayer()">
+            <button type="button" class="btn btn-primary" onclick="updatePlayer(@i)">
               <i class="bi bi-plus"></i>
             </button>
           </td>
@@ -77,8 +77,50 @@
       console.log(btn);
     }
     
-    function addPlayer() {
+    function getPlayerDataAt(idx) {
+      const row = $('tbody tr').eq(idx);
       
+      const clubName = row.find('.club span').text();
+      const clubUrl = row.find('.club').attr('data-url');
+      const clubImageUrl = row.find('.club img').attr('src');
+      
+      const club = {
+       name: clubName,
+       url: clubUrl,
+       imageUrl: clubImageUrl
+      };
+      
+      const nationName = row.find('.nation span').text();
+      const nationImageUrl = row.find('.nation img').attr('src');
+      
+      const nation = {
+       name: nationName,
+       imageUrl: nationImageUrl
+      }
+      
+      const name = row.find('.name span').text();
+      const imageUrl = row.find('.name img').attr('src');
+      const url = row.find('.name').attr('data-url');
+      const position = row.find('.position').text();
+      const age = row.find('.age').text();
+
+      return { name, imageUrl, url, club, position, age, nation};
+    }
+
+    function updatePlayer(idx) {
+      $.ajax({
+        url: 'Ppsn/Add/',
+        type: 'POST',
+        data: JSON.stringify([getPlayerDataAt(idx)]),
+        dataType: 'json',
+        contentType: 'application/json',
+        complete:  function () {
+          indices.forEach(idx => {
+            setLoadingButton(idx, false, updateBtnContent);
+            $('tbody tr').eq(idx).find('input[type="checkbox"]').prop('checked', false)
+          })
+        }
+      });
     }
     
   </script>
