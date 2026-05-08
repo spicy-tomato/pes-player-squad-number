@@ -20,9 +20,14 @@ public class SquadModel : PageModel
     public void OnGet()
     {
         List<Player?> players = _playerService.GetPlayersInSquad();
-        IOrderedEnumerable<NumberPoint> numberPoints = players.SelectMany(GetPoints)
+        string currentYy = (DateTime.Today.Year % 100).ToString("D2");
+
+        IOrderedEnumerable<NumberPoint> numberPoints = players
+            .SelectMany((p, i) => GetPoints(p, i, currentYy))
+            .Where(np => np.Point >= 2M)
             .OrderByDescending(np => np.Point)
-            .ThenByDescending(np => np.Player.Age);
+            .ThenByDescending(np => ParseAge(np.Player.Age));
+
         HashSet<int> assignedPlayers = [];
         HashSet<int> assignedNumbers = [];
 
@@ -40,55 +45,49 @@ public class SquadModel : PageModel
             player.RecommendedSquadNumber = number;
         }
 
-        foreach (Player? player in players)
-        {
-            if (player is not { RecommendedSquadNumber: null }) continue;
+        IEnumerable<Player> unassigned = players
+            .OfType<Player>()
+            .Where(p => p.RecommendedSquadNumber == null)
+            .OrderByDescending(p => ParseAge(p.Age));
 
-            int randomNumber = 2;
-            while (assignedNumbers.Contains(randomNumber))
+        foreach (Player player in unassigned)
+        {
+            int filler = 2;
+            while (assignedNumbers.Contains(filler))
             {
-                randomNumber++;
+                filler++;
             }
 
-            assignedNumbers.Add(randomNumber);
-            player.RecommendedSquadNumber = randomNumber;
+            assignedNumbers.Add(filler);
+            player.RecommendedSquadNumber = filler;
         }
 
         Result = players;
     }
 
-    private static IEnumerable<NumberPoint> GetPoints(Player? p, int index)
+    private static IEnumerable<NumberPoint> GetPoints(Player? p, int index, string currentYy)
     {
         if (p == null) return [];
 
-        List<List<int>> numbersInYears = p.SquadNumbers
-            .Where(sn => sn.Number < 100)
-            .OrderByDescending(sn => sn.Season)
-            .ThenBy(sn => sn.Number)
-            .GroupBy(sn => sn.Season)
-            .Select(sn => sn.Select(x => x.Number).ToList())
-            .ToList();
-
         Dictionary<int, decimal> numberDict = new();
 
-        for (int i = 0; i < numbersInYears.Count; i++)
+        foreach (IGrouping<string, SquadNumber> seasonGroup in p.SquadNumbers
+                     .Where(sn => sn.Number is > 0 and < 100)
+                     .GroupBy(sn => sn.Season))
         {
-            List<int> numbers = numbersInYears[i];
-            for (int j = 0; j < numbers.Count; j++)
-            {
-                int number = numbers[j];
-                if (i == 0 && j == 0)
-                {
-                    numberDict.Add(number, 10);
-                    continue;
-                }
+            List<int> numbers = seasonGroup.Select(sn => sn.Number).Distinct().ToList();
+            bool isCurrent = seasonGroup.Key.TrimEnd().EndsWith(currentYy);
+            decimal pointPerNumber = (isCurrent ? 10M : 1M) / numbers.Count;
 
-                decimal oldPoint = numberDict.GetValueOrDefault(number, 0);
-                decimal newPoint = oldPoint + 1M / numbers.Count;
-                numberDict[number] = newPoint;
+            foreach (int number in numbers)
+            {
+                decimal oldPoint = numberDict.GetValueOrDefault(number, 0M);
+                numberDict[number] = oldPoint + pointPerNumber;
             }
         }
 
         return numberDict.Select(n => new NumberPoint(n.Key, n.Value, p, index));
     }
+
+    private static int? ParseAge(string? age) => int.TryParse(age, out int parsed) ? parsed : null;
 }
