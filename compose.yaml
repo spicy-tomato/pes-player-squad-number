@@ -1,0 +1,33 @@
+services:
+  ppsn:
+    image: ppsn
+    build:
+      context: .
+      dockerfile: PesPlayerSquadNumber/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__PPSNDbContextConnection: "Host=db;Port=5432;Database=ppsn;Username=ppsn;Password=ppsn"
+    ports:
+      - "8080:8080"
+
+  db:
+    image: postgres:18.3-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ppsn
+      POSTGRES_USER: ppsn
+      POSTGRES_PASSWORD: ppsn
+    ports:
+      - "54320:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ppsn -d ppsn"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

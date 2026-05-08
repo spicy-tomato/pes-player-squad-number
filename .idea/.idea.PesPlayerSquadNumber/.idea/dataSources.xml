@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="PPSN" uuid="248957af-e5cc-4227-8808-f41f37956ba9">
-      <driver-ref>sqlserver.localdb.jb</driver-ref>
+    <data-source source="LOCAL" name="ppsn@localhost" uuid="fa3196a9-dc88-4084-98d8-c4ff13369c87">
+      <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
-      <configured-by-url>true</configured-by-url>
-      <jdbc-driver>com.jetbrains.jdbc.sqlserver.SqlServerDriver</jdbc-driver>
-      <jdbc-url>Server=(localdb)\mssqllocaldb;Database=PPSN;Trusted_Connection=True;MultipleActiveResultSets=true</jdbc-url>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:54320/ppsn</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

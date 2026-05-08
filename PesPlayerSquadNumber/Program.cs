@@ -9,7 +9,7 @@ var connectionString = builder.Configuration.GetConnectionString("PPSNDbContextC
                        throw new InvalidOperationException("Connection string 'PPSNDbContextConnection' not found.");
 
 builder.Services.AddDbContext<PpsnDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseNpgsql(connectionString));
 
 builder.Services.AddScoped<ITransfermarktService, TransfermarktService>();
 builder.Services.AddScoped<IClubService, ClubService>();
@@ -34,7 +34,6 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
