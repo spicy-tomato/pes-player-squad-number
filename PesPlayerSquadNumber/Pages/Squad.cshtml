@@ -1,4 +1,5 @@
 ﻿@page
+@using PesPlayerSquadNumber.Models
 @model SquadModel
 
 @{
@@ -21,9 +22,9 @@
   </thead>
 
   <tbody>
-    @for (var i = 0; i < Model.Result.Count; i++)
+    @for (int i = 0; i < Model.Result.Count; i++)
     {
-      var player = Model.Result[i];
+      Player? player = Model.Result[i];
 
       @if (player != null)
       {

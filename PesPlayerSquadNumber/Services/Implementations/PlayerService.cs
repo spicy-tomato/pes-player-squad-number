@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using PesPlayerSquadNumber.Dtos.Transfermarkt;
 using PesPlayerSquadNumber.Models;
 using PesPlayerSquadNumber.Services.Interfaces;
@@ -36,9 +37,9 @@ public class PlayerService : IPlayerService
 
     public List<Player?> GetPlayersInSquad()
     {
-        var players = Enumerable.Repeat((Player?)null, 23).ToList();
+        List<Player?> players = Enumerable.Repeat<Player?>(null, 23).ToList();
 
-        var playersInSquad = _context.Players
+        List<Player> playersInSquad = _context.Players
             .Include(p => p.Club)
             .Include(p => p.Nation)
             .Include(p => p.SquadNumbers)
@@ -46,7 +47,7 @@ public class PlayerService : IPlayerService
             .AsNoTracking()
             .ToList();
 
-        foreach (var player in playersInSquad)
+        foreach (Player player in playersInSquad)
         {
             players[player.SquadIndex!.Value] = player;
         }
@@ -60,7 +61,7 @@ public class PlayerService : IPlayerService
 
     public void Add(IEnumerable<TransfermarktPlayer> selectedPlayers)
     {
-        var transfermarktPlayers = selectedPlayers.ToList();
+        List<TransfermarktPlayer> transfermarktPlayers = selectedPlayers.ToList();
 
         _clubService.Add(transfermarktPlayers.Select(p => p.Club)
             .OfType<Club>()
@@ -70,14 +71,14 @@ public class PlayerService : IPlayerService
             .OfType<Nation>()
             .DistinctBy(c => c.ImageUrl));
 
-        foreach (var playerDto in transfermarktPlayers)
+        foreach (TransfermarktPlayer playerDto in transfermarktPlayers)
         {
-            var squadNumbers = _transfermarktService.GetSquadNumbers(playerDto.Url);
+            List<SquadNumber> squadNumbers = _transfermarktService.GetSquadNumbers(playerDto.Url);
 
-            var club = _clubService.GetByUrl(playerDto.Club?.Url);
-            var nation = _nationService.GetByImageUrl(playerDto.Nation?.ImageUrl);
+            Models.Club? club = _clubService.GetByUrl(playerDto.Club?.Url);
+            Models.Nation? nation = _nationService.GetByImageUrl(playerDto.Nation?.ImageUrl);
 
-            var player = TryAddPlayer(playerDto, club, nation!);
+            Player player = TryAddPlayer(playerDto, club, nation!);
 
             AddSquadNumbers(player, squadNumbers);
         }
@@ -87,14 +88,11 @@ public class PlayerService : IPlayerService
 
     public void AssignToSquad(int playerId, int squadIndex)
     {
-        var player = _context.Players.FirstOrDefault(p => p.Id == playerId);
+        Player? player = _context.Players.FirstOrDefault(p => p.Id == playerId);
         if (player == null) throw new Exception($"Cannot find player with ID {playerId}");
 
-        var assignedPlayer = _context.Players.FirstOrDefault(p => p.SquadIndex == squadIndex);
-        if (assignedPlayer != null)
-        {
-            assignedPlayer.SquadIndex = player.SquadIndex;
-        }
+        Player? assignedPlayer = _context.Players.FirstOrDefault(p => p.SquadIndex == squadIndex);
+        assignedPlayer?.SquadIndex = player.SquadIndex;
 
         player.SquadIndex = squadIndex;
 
@@ -103,10 +101,10 @@ public class PlayerService : IPlayerService
 
     private Player TryAddPlayer(TransfermarktPlayer playerDto, Models.Club? club, Models.Nation nation)
     {
-        var savedPlayer = _context.Players.FirstOrDefault(p => p.Url == playerDto.Url);
+        Player? savedPlayer = _context.Players.FirstOrDefault(p => p.Url == playerDto.Url);
         if (savedPlayer != null) return savedPlayer;
 
-        var player = new Player
+        Player player = new()
         {
             Name = playerDto.Name,
             Url = playerDto.Url,
@@ -117,13 +115,13 @@ public class PlayerService : IPlayerService
             Nation = nation
         };
 
-        var model = _context.Players.Add(player);
+        EntityEntry<Player> model = _context.Players.Add(player);
         return model.Entity;
     }
 
     private void AddSquadNumbers(Player player, List<SquadNumber> squadNumbers)
     {
-        foreach (var squadNumber in squadNumbers)
+        foreach (SquadNumber squadNumber in squadNumbers)
         {
             squadNumber.Player = player;
             _context.SquadNumbers.Add(squadNumber);

@@ -1,28 +1,38 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PesPlayerSquadNumber.Models;
 
 public class Player
 {
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id { get; set; }
+    public int Id { get; init; }
 
-    public string Name { get; set; } = null!;
-    public string ImageUrl { get; set; } = null!;
-    public string Url { get; set; } = null!;
-    public string Position { get; set; } = null!;
-    public string? Age { get; set; }
+    [MaxLength(200)]
+    public string Name { get; init; } = null!;
+
+    [MaxLength(1000)]
+    public string ImageUrl { get; init; } = null!;
+
+    [MaxLength(1000)]
+    public string Url { get; init; } = null!;
+
+    [MaxLength(100)]
+    public string Position { get; init; } = null!;
+
+    [MaxLength(10)]
+    public string? Age { get; init; }
 
     public int? SquadIndex { get; set; }
 
 
-    public int NationId { get; set; }
-    public Nation Nation { get; set; } = null!;
+    public int NationId { get; init; }
+    public Nation Nation { get; init; } = null!;
 
-    public int? ClubId { get; set; }
-    public Club? Club { get; set; }
+    public int? ClubId { get; init; }
+    public Club? Club { get; init; }
 
-    public virtual List<SquadNumber> SquadNumbers { get; set; } = new();
+    public virtual List<SquadNumber> SquadNumbers { get; init; } = [];
 
     [NotMapped]
     public int? CurrentSquadNumber => SquadNumbers.Count == 0 ? null : SquadNumbers[^1].Number;

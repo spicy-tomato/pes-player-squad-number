@@ -5,12 +5,10 @@ namespace PesPlayerSquadNumber.Services.Implementations;
 
 public class NationService : INationService
 {
-    private readonly ILogger<NationService> _logger;
     private readonly PpsnDbContext _context;
 
-    public NationService(ILogger<NationService> logger, PpsnDbContext context)
+    public NationService(PpsnDbContext context)
     {
-        _logger = logger;
         _context = context;
     }
 
@@ -19,7 +17,7 @@ public class NationService : INationService
 
     public void Add(IEnumerable<Nation> clubs)
     {
-        foreach (var club in clubs)
+        foreach (Nation club in clubs)
         {
             Add(club);
         }
@@ -29,7 +27,7 @@ public class NationService : INationService
 
     private void Add(Nation nation)
     {
-        var nationExists = _context.Nations.Any(c => c.ImageUrl == nation.ImageUrl);
+        bool nationExists = _context.Nations.Any(c => c.ImageUrl == nation.ImageUrl);
         if (nationExists) return;
 
         _context.Nations.Add(new Models.Nation

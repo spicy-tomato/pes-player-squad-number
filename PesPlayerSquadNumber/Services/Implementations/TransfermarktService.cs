@@ -17,11 +17,11 @@ public class TransfermarktService : ITransfermarktService
 
     public List<TransfermarktPlayer> Search(string? playerNameToSearch, int page)
     {
-        if (string.IsNullOrEmpty(playerNameToSearch)) return new List<TransfermarktPlayer>();
+        if (string.IsNullOrEmpty(playerNameToSearch)) return [];
 
-        var url = TransfermarktConstant.PlayerList.Url(page, playerNameToSearch);
+        string url = TransfermarktConstant.PlayerList.Url(page, playerNameToSearch);
         const string rootNodeXPath = TransfermarktConstant.PlayerList.RootNodeXPath;
-        var nodes = LoadWebAndSelectNodes(url, rootNodeXPath);
+        HtmlNodeCollection nodes = LoadWebAndSelectNodes(url, rootNodeXPath);
 
         return nodes.Select(ReadPlayerDataFromRowOfList).ToList();
     }
@@ -30,11 +30,11 @@ public class TransfermarktService : ITransfermarktService
     {
         if (string.IsNullOrEmpty(playerUrl)) throw new Exception("URL cannot be null");
 
-        var url = TransfermarktConstant.SquadNumber.Url(playerUrl);
+        string url = TransfermarktConstant.SquadNumber.Url(playerUrl);
         const string rootNodeXPath = TransfermarktConstant.SquadNumber.RootNodeXPath;
-        var squadNumberNodes = LoadWebAndSelectNodes(url, rootNodeXPath);
+        HtmlNodeCollection squadNumberNodes = LoadWebAndSelectNodes(url, rootNodeXPath);
 
-        var squadNumbersList = squadNumberNodes.Select(ReadSquadNumberHistory).ToList();
+        List<SquadNumber> squadNumbersList = squadNumberNodes.Select(ReadSquadNumberHistory).ToList();
         squadNumbersList.Reverse();
 
         return squadNumbersList;
@@ -46,12 +46,12 @@ public class TransfermarktService : ITransfermarktService
         try
         {
             // has club
-            var clubLinkNode = node.SelectSingleNode(TransfermarktConstant.PlayerList.ClubLinkXPath);
-            var clubImageNode = node.SelectSingleNode(TransfermarktConstant.PlayerList.ClubImageXPath);
+            HtmlNode clubLinkNode = node.SelectSingleNode(TransfermarktConstant.PlayerList.ClubLinkXPath);
+            HtmlNode clubImageNode = node.SelectSingleNode(TransfermarktConstant.PlayerList.ClubImageXPath);
 
-            var clubUrl = clubLinkNode.GetAttributeValue("href", null);
-            var clubName = clubImageNode.GetAttributeValue("title", null);
-            var clubImageUrl = clubImageNode.GetAttributeValue("src", null);
+            string clubUrl = clubLinkNode.GetAttributeValue("href", string.Empty);
+            string clubName = clubImageNode.GetAttributeValue("title", string.Empty);
+            string clubImageUrl = clubImageNode.GetAttributeValue("src", string.Empty);
 
             club = new Club(clubName, clubUrl, clubImageUrl);
         }
@@ -60,24 +60,24 @@ public class TransfermarktService : ITransfermarktService
             // ignored
         }
 
-        var nationNode = node.SelectSingleNode(TransfermarktConstant.PlayerList.NationImageXPath);
-        var nameNode = node.SelectSingleNode(TransfermarktConstant.PlayerList.NameXPath);
-        var imageNode = node.SelectSingleNode(TransfermarktConstant.PlayerList.ImageXPath);
-        var positionNode = node.SelectSingleNode(TransfermarktConstant.PlayerList.PositionXPath);
-        var ageNode = node.SelectSingleNode(TransfermarktConstant.PlayerList.AgeXPath);
+        HtmlNode nationNode = node.SelectSingleNode(TransfermarktConstant.PlayerList.NationImageXPath);
+        HtmlNode nameNode = node.SelectSingleNode(TransfermarktConstant.PlayerList.NameXPath);
+        HtmlNode imageNode = node.SelectSingleNode(TransfermarktConstant.PlayerList.ImageXPath);
+        HtmlNode positionNode = node.SelectSingleNode(TransfermarktConstant.PlayerList.PositionXPath);
+        HtmlNode ageNode = node.SelectSingleNode(TransfermarktConstant.PlayerList.AgeXPath);
 
-        var nationName = nationNode?.GetAttributeValue("title", null);
-        var nationImageUrl = nationNode?.GetAttributeValue("src", null);
+        string nationName = nationNode.GetAttributeValue("title", string.Empty);
+        string nationImageUrl = nationNode.GetAttributeValue("src", string.Empty);
 
-        var playerName = HtmlEntity.DeEntitize(nameNode.InnerText);
-        var playerUrl = nameNode.GetAttributeValue("href", null);
-        var playerImageUrl = imageNode.GetAttributeValue("src", null);
-        var playerPosition = HtmlEntity.DeEntitize(positionNode.InnerText);
-        var playerAge = ageNode != null ? HtmlEntity.DeEntitize(ageNode.InnerText) : null;
+        string playerName = HtmlEntity.DeEntitize(nameNode.InnerText);
+        string playerUrl = nameNode.GetAttributeValue("href", string.Empty);
+        string playerImageUrl = imageNode.GetAttributeValue("src", string.Empty);
+        string playerPosition = HtmlEntity.DeEntitize(positionNode.InnerText);
+        string playerAge = HtmlEntity.DeEntitize(ageNode.InnerText);
 
-        var nation = nationName != null && nationImageUrl != null ? new Nation(nationName, nationImageUrl) : null;
+        Nation nation = new(nationName, nationImageUrl);
 
-        var player = new TransfermarktPlayer(playerName, playerImageUrl, playerUrl, club, playerPosition, playerAge,
+        TransfermarktPlayer player = new(playerName, playerImageUrl, playerUrl, club, playerPosition, playerAge,
             nation);
 
         return player;
@@ -85,15 +85,15 @@ public class TransfermarktService : ITransfermarktService
 
     private static SquadNumber ReadSquadNumberHistory(HtmlNode node)
     {
-        var seasonNode = node.SelectSingleNode(TransfermarktConstant.SquadNumber.SeasonXPath);
-        var clubImageNode = node.SelectSingleNode(TransfermarktConstant.SquadNumber.ClubImageXPath);
-        var clubNameNode = node.SelectSingleNode(TransfermarktConstant.SquadNumber.ClubNameXPath);
-        var numberNode = node.SelectSingleNode(TransfermarktConstant.SquadNumber.NumberXPath);
+        HtmlNode seasonNode = node.SelectSingleNode(TransfermarktConstant.SquadNumber.SeasonXPath);
+        HtmlNode clubImageNode = node.SelectSingleNode(TransfermarktConstant.SquadNumber.ClubImageXPath);
+        HtmlNode clubNameNode = node.SelectSingleNode(TransfermarktConstant.SquadNumber.ClubNameXPath);
+        HtmlNode numberNode = node.SelectSingleNode(TransfermarktConstant.SquadNumber.NumberXPath);
 
-        var season = HtmlEntity.DeEntitize(seasonNode.InnerText);
-        var clubImage = clubImageNode.GetAttributeValue("src", null);
-        var clubName = HtmlEntity.DeEntitize(clubNameNode.InnerText);
-        var number = int.Parse(HtmlEntity.DeEntitize(numberNode.InnerText));
+        string season = HtmlEntity.DeEntitize(seasonNode.InnerText);
+        string clubImage = clubImageNode.GetAttributeValue("src", string.Empty);
+        string clubName = HtmlEntity.DeEntitize(clubNameNode.InnerText);
+        int number = int.Parse(HtmlEntity.DeEntitize(numberNode.InnerText));
 
         Models.Club club = new()
         {
@@ -114,17 +114,15 @@ public class TransfermarktService : ITransfermarktService
 
     private HtmlNodeCollection LoadWebAndSelectNodes(string url, string rootNodeXPath)
     {
-        var document = _web.Load(BaseUrl + url);
-        var nodes = SelectNodes(document, rootNodeXPath);
+        HtmlDocument document = _web.Load(BaseUrl + url);
+        HtmlNodeCollection nodes = SelectNodes(document, rootNodeXPath);
         return nodes;
     }
 
     private static HtmlNodeCollection SelectNodes(HtmlDocument document, string nodeXPath)
     {
-        var nodes = document.DocumentNode.SelectNodes(nodeXPath);
+        HtmlNodeCollection? nodes = document.DocumentNode.SelectNodes(nodeXPath);
 
-        if (nodes == null) throw new Exception($"Cannot scrape data! XPath: {nodeXPath}");
-
-        return nodes;
+        return nodes ?? throw new Exception($"Cannot scrape data! XPath: {nodeXPath}");
     }
 }

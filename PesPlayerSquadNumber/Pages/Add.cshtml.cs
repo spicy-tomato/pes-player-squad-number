@@ -17,7 +17,7 @@ public class AddModel : PageModel
     [BindProperty]
     public string? Input { get; set; }
 
-    public List<TransfermarktPlayer> Result { get; set; } = new();
+    public List<TransfermarktPlayer> Result { get; set; } = [];
 
     public void OnGet(string? input = null)
     {

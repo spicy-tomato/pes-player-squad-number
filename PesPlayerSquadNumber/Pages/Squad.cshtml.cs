@@ -15,20 +15,20 @@ public class SquadModel : PageModel
         _playerService = playerService;
     }
 
-    public List<Player?> Result { get; set; } = new();
+    public List<Player?> Result { get; set; } = [];
 
     public void OnGet()
     {
-        var players = _playerService.GetPlayersInSquad();
-        var numberPoints = players.SelectMany(GetPoints)
+        List<Player?> players = _playerService.GetPlayersInSquad();
+        IOrderedEnumerable<NumberPoint> numberPoints = players.SelectMany(GetPoints)
             .OrderByDescending(np => np.Point)
             .ThenByDescending(np => np.Player.Age);
-        HashSet<int> assignedPlayers = new();
-        HashSet<int> assignedNumbers = new();
+        HashSet<int> assignedPlayers = [];
+        HashSet<int> assignedNumbers = [];
 
-        foreach (var numberPoint in numberPoints)
+        foreach (NumberPoint numberPoint in numberPoints)
         {
-            var (number, _, player, index) = numberPoint;
+            (int number, _, Player player, int index) = numberPoint;
 
             if (assignedPlayers.Contains(index) || assignedNumbers.Contains(number))
             {
@@ -40,11 +40,11 @@ public class SquadModel : PageModel
             player.RecommendedSquadNumber = number;
         }
 
-        foreach (var player in players)
+        foreach (Player? player in players)
         {
             if (player is not { RecommendedSquadNumber: null }) continue;
 
-            var randomNumber = 2;
+            int randomNumber = 2;
             while (assignedNumbers.Contains(randomNumber))
             {
                 randomNumber++;
@@ -59,9 +59,9 @@ public class SquadModel : PageModel
 
     private static IEnumerable<NumberPoint> GetPoints(Player? p, int index)
     {
-        if (p == null) return Array.Empty<NumberPoint>();
+        if (p == null) return [];
 
-        var numbersInYears = p.SquadNumbers
+        List<List<int>> numbersInYears = p.SquadNumbers
             .Where(sn => sn.Number < 100)
             .OrderByDescending(sn => sn.Season)
             .ThenBy(sn => sn.Number)
@@ -71,20 +71,20 @@ public class SquadModel : PageModel
 
         Dictionary<int, decimal> numberDict = new();
 
-        for (var i = 0; i < numbersInYears.Count; i++)
+        for (int i = 0; i < numbersInYears.Count; i++)
         {
-            var numbers = numbersInYears[i];
-            for (var j = 0; j < numbers.Count; j++)
+            List<int> numbers = numbersInYears[i];
+            for (int j = 0; j < numbers.Count; j++)
             {
-                var number = numbers[j];
+                int number = numbers[j];
                 if (i == 0 && j == 0)
                 {
                     numberDict.Add(number, 10);
                     continue;
                 }
 
-                var oldPoint = numberDict.GetValueOrDefault(number, 0);
-                var newPoint = oldPoint + 1M / numbers.Count;
+                decimal oldPoint = numberDict.GetValueOrDefault(number, 0);
+                decimal newPoint = oldPoint + 1M / numbers.Count;
                 numberDict[number] = newPoint;
             }
         }

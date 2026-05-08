@@ -18,7 +18,7 @@ public class ClubService : IClubService
 
     public void Add(IEnumerable<Club> clubs)
     {
-        foreach (var club in clubs)
+        foreach (Club club in clubs)
         {
             Add(club);
         }
@@ -28,7 +28,7 @@ public class ClubService : IClubService
 
     private void Add(Club club)
     {
-        var clubExists = _context.Clubs.Any(c => c.Url == club.Url);
+        bool clubExists = _context.Clubs.Any(c => c.Url == club.Url);
         if (clubExists) return;
 
         _context.Clubs.Add(new Models.Club

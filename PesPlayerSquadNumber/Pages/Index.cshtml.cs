@@ -13,7 +13,7 @@ public class IndexModel : PageModel
         _playerService = playerService;
     }
     
-    public List<Player> Result { get; set; } = new();
+    public List<Player> Result { get; set; } = [];
 
     public void OnGet()
     {

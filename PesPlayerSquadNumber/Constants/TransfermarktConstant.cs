@@ -2,7 +2,7 @@
 
 namespace PesPlayerSquadNumber.Constants;
 
-public abstract class TransfermarktConstant
+public abstract partial class TransfermarktConstant
 {
     public const string BaseUrl = "https://www.transfermarkt.com";
 
@@ -29,9 +29,9 @@ public abstract class TransfermarktConstant
         public const string AgeXPath = "td[4]";
     }
 
-    public abstract class SquadNumber
+    public abstract partial class SquadNumber
     {
-        public static string Url(string playerUrl) => Regex.Replace(playerUrl, "profil", "rueckennummern");
+        public static string Url(string playerUrl) => ProfileRegex().Replace(playerUrl, "rueckennummern");
 
         public const string RootNodeXPath =
             "//*[@id='main']/main/div[3]/div[1]/div[1]/div/div/table/tbody/tr[position()>0]";
@@ -44,5 +44,8 @@ public abstract class TransfermarktConstant
         public const string ClubNameXPath = "td[3]/a";
         
         public const string NumberXPath = "td[4]";
+
+        [GeneratedRegex("profil")]
+        private static partial Regex ProfileRegex();
     }
 }

@@ -3,9 +3,9 @@ using PesPlayerSquadNumber;
 using PesPlayerSquadNumber.Services.Implementations;
 using PesPlayerSquadNumber.Services.Interfaces;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("PPSNDbContextConnection") ??
+string connectionString = builder.Configuration.GetConnectionString("PPSNDbContextConnection") ??
                        throw new InvalidOperationException("Connection string 'PPSNDbContextConnection' not found.");
 
 builder.Services.AddDbContext<PpsnDbContext>(options =>
@@ -24,7 +24,7 @@ builder.Services.AddControllers()
         options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
     );
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

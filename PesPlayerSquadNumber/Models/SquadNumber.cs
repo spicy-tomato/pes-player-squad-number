@@ -1,19 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PesPlayerSquadNumber.Models;
 
 public class SquadNumber
 {
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-    public int Id { get; set; }
+    public int Id { get; init; }
 
-    public string Season { get; set; } = null!;
+    [MaxLength(100)]
+    public string Season { get; init; } = null!;
 
-    public int Number { get; set; }
+    public int Number { get; init; }
 
-    public int ClubId { get; set; }
-    public virtual Club Club { get; set; } = null!;
+    public int ClubId { get; init; }
+    public virtual Club Club { get; init; } = null!;
 
-    public int PlayerId { get; set; }
+    public int PlayerId { get; init; }
     public virtual Player Player { get; set; } = null!;
 }
