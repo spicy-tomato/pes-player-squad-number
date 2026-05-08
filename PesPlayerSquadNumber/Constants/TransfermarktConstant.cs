@@ -34,7 +34,7 @@ public abstract partial class TransfermarktConstant
         public static string Url(string playerUrl) => ProfileRegex().Replace(playerUrl, "rueckennummern");
 
         public const string RootNodeXPath =
-            "//*[@id='main']/main/div[3]/div[1]/div[1]/div/div/table/tbody/tr[position()>0]";
+            "//*[@id='yw1']/table/tbody/tr";
              //html/body/div[3]/main/div[3]/div[1]/div[1]/div/div/table/tbody/tr[1]
 
         public const string SeasonXPath = "td[1]";

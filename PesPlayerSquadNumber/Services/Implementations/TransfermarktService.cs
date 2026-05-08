@@ -17,7 +17,7 @@ public class TransfermarktService : ITransfermarktService
 
     public List<TransfermarktPlayer> Search(string? playerNameToSearch, int page)
     {
-        if (string.IsNullOrEmpty(playerNameToSearch)) return [];
+        if (string.IsNullOrEmpty(playerNameToSearch)) return new List<TransfermarktPlayer>();
 
         string url = TransfermarktConstant.PlayerList.Url(page, playerNameToSearch);
         const string rootNodeXPath = TransfermarktConstant.PlayerList.RootNodeXPath;
@@ -60,22 +60,22 @@ public class TransfermarktService : ITransfermarktService
             // ignored
         }
 
-        HtmlNode nationNode = node.SelectSingleNode(TransfermarktConstant.PlayerList.NationImageXPath);
+        HtmlNode? nationNode = node.SelectSingleNode(TransfermarktConstant.PlayerList.NationImageXPath);
         HtmlNode nameNode = node.SelectSingleNode(TransfermarktConstant.PlayerList.NameXPath);
         HtmlNode imageNode = node.SelectSingleNode(TransfermarktConstant.PlayerList.ImageXPath);
         HtmlNode positionNode = node.SelectSingleNode(TransfermarktConstant.PlayerList.PositionXPath);
-        HtmlNode ageNode = node.SelectSingleNode(TransfermarktConstant.PlayerList.AgeXPath);
+        HtmlNode? ageNode = node.SelectSingleNode(TransfermarktConstant.PlayerList.AgeXPath);
 
-        string nationName = nationNode.GetAttributeValue("title", string.Empty);
-        string nationImageUrl = nationNode.GetAttributeValue("src", string.Empty);
+        string? nationName = nationNode?.GetAttributeValue("title", string.Empty);
+        string? nationImageUrl = nationNode?.GetAttributeValue("src", string.Empty);
 
         string playerName = HtmlEntity.DeEntitize(nameNode.InnerText);
         string playerUrl = nameNode.GetAttributeValue("href", string.Empty);
         string playerImageUrl = imageNode.GetAttributeValue("src", string.Empty);
         string playerPosition = HtmlEntity.DeEntitize(positionNode.InnerText);
-        string playerAge = HtmlEntity.DeEntitize(ageNode.InnerText);
+        string? playerAge = ageNode != null ? HtmlEntity.DeEntitize(ageNode.InnerText) : null;
 
-        Nation nation = new(nationName, nationImageUrl);
+        Nation? nation = nationName != null && nationImageUrl != null ? new Nation(nationName, nationImageUrl) : null;
 
         TransfermarktPlayer player = new(playerName, playerImageUrl, playerUrl, club, playerPosition, playerAge,
             nation);

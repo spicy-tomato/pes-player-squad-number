@@ -1,4 +1,4 @@
-﻿@page
+@page
 @using PesPlayerSquadNumber.Models
 @model SquadModel
 
@@ -17,11 +17,11 @@
       <th scope="col">Current</th>
       <th scope="col">Recommended</th>
       <th scope="col">Age</th>
-      <th scope="col">Update</th>
+      <th scope="col">Action</th>
     </tr>
   </thead>
 
-  <tbody>
+  <tbody id="squad-tbody">
     @for (int i = 0; i < Model.Result.Count; i++)
     {
       Player? player = Model.Result[i];
@@ -50,8 +50,11 @@
           <td class="current-number">@player.RecommendedSquadNumber</td>
           <td class="age">@player.Age</td>
           <td>
-            <button type="button" class="btn btn-primary" onclick="updatePlayer(@i)">
-              <i class="bi bi-arrow-clockwise"></i>
+            <button type="button" class="player-popover btn btn-primary"
+                    data-bs-toggle="popover"
+                    data-squad-index="@i"
+                    data-current-player-id="@player.Id">
+              Re-assign
             </button>
           </td>
         </tr>
@@ -61,7 +64,10 @@
         <tr>
           <th scope="row">@(i + 1)</th>
           <td>
-            <button type="button" class="btn btn-primary" onclick="updatePlayer(@i)">
+            <button type="button" class="player-popover btn btn-primary"
+                    data-bs-toggle="popover"
+                    data-squad-index="@i"
+                    data-current-player-id="">
               <i class="bi bi-plus"></i>
             </button>
           </td>
@@ -73,56 +79,142 @@
 
 @section Scripts {
   <script>
-  
-    function removePlayer(playerId, btn) {
-      console.log(btn);
-    }
-    
-    function getPlayerDataAt(idx) {
-      const row = $('tbody tr').eq(idx);
-      
-      const clubName = row.find('.club span').text();
-      const clubUrl = row.find('.club').attr('data-url');
-      const clubImageUrl = row.find('.club img').attr('src');
-      
-      const club = {
-       name: clubName,
-       url: clubUrl,
-       imageUrl: clubImageUrl
-      };
-      
-      const nationName = row.find('.nation span').text();
-      const nationImageUrl = row.find('.nation img').attr('src');
-      
-      const nation = {
-       name: nationName,
-       imageUrl: nationImageUrl
-      }
-      
-      const name = row.find('.name span').text();
-      const imageUrl = row.find('.name img').attr('src');
-      const url = row.find('.name').attr('data-url');
-      const position = row.find('.position').text();
-      const age = row.find('.age').text();
+    let popovers = [];
+    let allPlayers = [];
 
-      return { name, imageUrl, url, club, position, age, nation};
+    function loadAllPlayers() {
+      return $.ajax({
+        url: 'Ppsn/GetAll/',
+        type: 'GET',
+        dataType: 'json',
+        contentType: 'application/json'
+      }).then(function (res) {
+        allPlayers = res || [];
+      });
     }
 
-    function updatePlayer(idx) {
+    function refreshSquad() {
       $.ajax({
-        url: 'Ppsn/Add/',
-        type: 'POST',
-        data: JSON.stringify([getPlayerDataAt(idx)]),
+        url: 'Ppsn/GetInSquad/',
+        type: 'GET',
         dataType: 'json',
         contentType: 'application/json',
-        complete:  function () {
-          indices.forEach(idx => {
-            setLoadingButton(idx, false, updateBtnContent);
-            $('tbody tr').eq(idx).find('input[type="checkbox"]').prop('checked', false)
-          })
+        success: function (players) {
+          renderRows(players || []);
+          initPopovers();
         }
       });
     }
-    
+
+    function renderRows(players) {
+      const $tbody = $('#squad-tbody').empty();
+
+      for (let i = 0; i < players.length; i++) {
+        const p = players[i];
+        const $tr = $(document.createElement('tr'));
+
+        $tr.append(`<th scope="row">${i + 1}</th>`);
+
+        if (p) {
+          const clubHtml = p.club
+            ? `<img src="${p.club.imageUrl}" alt="${p.club.name}"><span>${p.club.name}</span>`
+            : '';
+          const nationHtml = p.nation
+            ? `<img src="${p.nation.imageUrl}" alt="${p.nation.name}"><span>${p.nation.name}</span>`
+            : '';
+
+          $tr.append(`
+            <td class="name">
+              <img src="${p.imageUrl}" alt="${p.name}">
+              <span>${p.name}</span>
+            </td>
+            <td class="position">${p.position ?? ''}</td>
+            <td class="nation">${nationHtml}</td>
+            <td class="club">${clubHtml}</td>
+            <td class="current-number">${p.currentSquadNumber ?? ''}</td>
+            <td class="current-number">${p.recommendedSquadNumber ?? ''}</td>
+            <td class="age">${p.age ?? ''}</td>
+            <td>
+              <button type="button" class="player-popover btn btn-primary"
+                      data-bs-toggle="popover"
+                      data-squad-index="${i}"
+                      data-current-player-id="${p.id}">
+                Re-assign
+              </button>
+            </td>
+          `);
+        } else {
+          $tr.append(`
+            <td>
+              <button type="button" class="player-popover btn btn-primary"
+                      data-bs-toggle="popover"
+                      data-squad-index="${i}"
+                      data-current-player-id="">
+                <i class="bi bi-plus"></i>
+              </button>
+            </td>
+          `);
+        }
+
+        $tbody.append($tr);
+      }
+    }
+
+    function initPopovers() {
+      popovers.forEach(p => p.dispose());
+      const triggers = [].slice.call(document.querySelectorAll('.player-popover'));
+      popovers = triggers.map(function (el) {
+        const squadIndex = parseInt($(el).attr('data-squad-index'), 10);
+        const currentPlayerId = $(el).attr('data-current-player-id');
+        return new bootstrap.Popover(el, {
+          content: buildPopupContent(squadIndex, currentPlayerId),
+          html: true,
+          container: 'body'
+        });
+      });
+    }
+
+    function buildPopupContent(squadIndex, currentPlayerId) {
+      const $wrap = $(document.createElement('div'))
+        .addClass('overflow-auto')
+        .css('max-height', '400px');
+
+      const candidates = allPlayers.filter(p => String(p.id) !== String(currentPlayerId));
+
+      candidates.forEach((p, idx) => {
+        const $row = $(document.createElement('div'))
+          .addClass('d-flex align-items-center mt-1')
+          .append($(document.createElement('div')).text(`${idx + 1}.`).addClass('me-1'))
+          .append($(document.createElement('div')).addClass('me-1').text(p.name))
+          .append(buildAssignBtn(p.id, squadIndex));
+        $wrap.append($row);
+      });
+
+      return $wrap;
+    }
+
+    function buildAssignBtn(playerId, squadIndex) {
+      const $btn = $($.parseHTML('<div type="button" class="btn btn-primary btn-sm">Assign</div>'));
+      $btn.on('click', function () {
+        assign(playerId, squadIndex);
+      });
+      return $btn;
+    }
+
+    function assign(playerId, squadIndex) {
+      $.ajax({
+        url: 'Ppsn/AssignToSquad/',
+        type: 'POST',
+        data: JSON.stringify({ playerId, squadIndex }),
+        contentType: 'application/json',
+        success: function () {
+          refreshSquad();
+        }
+      });
+    }
+
+    $(document).ready(function () {
+      loadAllPlayers().then(initPopovers);
+    });
   </script>
 }

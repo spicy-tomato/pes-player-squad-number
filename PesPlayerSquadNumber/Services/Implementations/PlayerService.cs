@@ -32,6 +32,7 @@ public class PlayerService : IPlayerService
     public List<Player> GetAll() => _context.Players
         .Include(p => p.Club)
         .Include(p => p.Nation)
+        .Include(p => p.SquadNumbers)
         .AsNoTracking()
         .ToList();
 
